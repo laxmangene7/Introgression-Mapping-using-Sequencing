@@ -70,3 +70,26 @@ done
 
 ### 8.Cat samples and the chromosomes you like to plot and use ggplot2 in R to get read depth graph to confirm translocations:
 
+###9. Generate graph using ggplot2 in R
+
+library(tidyverse)
+library(ggplot2)
+library(ggExtra)
+library(gridExtra)
+options(scipen=999)
+library(data.table)
+df <- fread("all.sample.all.chr.txt", header = T, check.names = F, data.table = F) # we concatenated all sample into a file
+colnames(df)[1:5] = c('rawread', 'chr', 'pos', 'nread', 'sample' )# raw reads, chromosomes, position, normalized reads sample
+SAMPLE <- unique(df$sample)
+df
+
+
+dotplots <- function(S){
+  sam = df[grep(S, df$sample), ]
+  p <- ggplot(data = subset(sam, sam$nread<1000), aes(pos,nread)) + geom_point(stat="identity", colour="blue") + facet_wrap( ~ chr, ncol=1) ## when reads were normalized to 10 million per sample
+  file.nm = paste0(S,".pdf")
+  ggsave(file.nm, p, width = 15, height = 50, units = "in", limitsize = F) +
+    theme(axis.text.x =element_text(angle = 90, vjust=0.5, hjust=0))
+}
+lapply(SAMPLE, dotplots)
+#dev.off()
